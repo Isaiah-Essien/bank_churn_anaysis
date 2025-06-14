@@ -124,6 +124,7 @@ POST /predict
   "EstimatedSalary": 65000.0
 }
 ```
+![Inputs](./screenshots/sample_body.png)
 
 ### Output:
 ```json
@@ -133,7 +134,7 @@ POST /predict
 }
 ```
 
-> _Placeholder: Insert screenshot of FastAPI `/docs` or example output_
+![Response Body](/screenshots/response.png)
 
 ---
 
