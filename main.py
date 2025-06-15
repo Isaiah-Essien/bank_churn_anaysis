@@ -3,25 +3,41 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import numpy as np
 import joblib
-from tensorflow.keras.models import load_model
+from tensorflow.keras.models import load_model as keras_load_model
+import os
 
-# === Load model and scaler ===
-model = load_model("./models/balanced_churn_nn.keras")
-scaler = joblib.load("./models/balanced_churn_scaler.pkl")
+# ---------------CONFIG -----------------------
 
-# === Define FastAPI app ===
+# or "./models/bank_churn_model.pkl"
+MODEL_PATH = "./models/bank_churn_nn_model_real_data.keras"
+SCALER_PATH = "./models/bank_churn_scaler_real_data.pkl"
+
+# Age, Tenure, Balance, NumProducts, EstimatedSalary
+NUMERIC_INDICES = [0, 1, 2, 3, 6]
+
+# ---------------LOAD SCALER------------------------
+
+scaler = joblib.load(SCALER_PATH)
+
+# ----------------LOAD MODEL ----------------------
+
+model_ext = os.path.splitext(MODEL_PATH)[1].lower()
+if model_ext in (".h5", ".keras"):
+    model = keras_load_model(MODEL_PATH)
+else:
+    model = joblib.load(MODEL_PATH)
+
+# ------------APP SETUP-------------------
+
 app = FastAPI(title="Bank Churn Prediction API")
-
-# === Enable CORS (for frontend integration or Render deployment) ===
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Change this to specific domains in production
-    allow_credentials=True,
+    allow_origins=["*"],   # lock down in production
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# === Define input schema ===
+# -----------REQUEST SCHEMA-----------
 
 
 class CustomerInput(BaseModel):
@@ -33,24 +49,35 @@ class CustomerInput(BaseModel):
     IsActiveMember: int
     EstimatedSalary: float
 
-# === Prediction endpoint ===
+# -------------------PREDICTION ENDPOINT ----------------------------
 
 
 @app.post("/predict")
 def predict_churn(data: CustomerInput):
-    # Convert input to numpy array
-    x_input = np.array([[data.Age, data.Tenure, data.Balance, data.NumProducts,
-                         data.HasCreditCard, data.IsActiveMember, data.EstimatedSalary]])
+    # 1. Build 1×7 feature vector in fixed order
+    x = np.array([[
+        data.Age,
+        data.Tenure,
+        data.Balance,
+        data.NumProducts,
+        data.HasCreditCard,
+        data.IsActiveMember,
+        data.EstimatedSalary
+    ]], dtype=float)
 
-    # Standardize numeric columns (Age, Tenure, Balance, NumProducts, EstimatedSalary)
-    numeric_indices = [0, 1, 2, 3, 6]
-    x_input[:, numeric_indices] = scaler.transform(x_input[:, numeric_indices])
+    # 2. Scale only numeric columns
+    x[:, NUMERIC_INDICES] = scaler.transform(x[:, NUMERIC_INDICES])
 
-    # Predict
-    prob = model.predict(x_input).ravel()[0]
-    prediction = int(prob > 0.5)
+    # 3. Predict probability
+    if hasattr(model, "predict_proba"):
+        prob = model.predict_proba(x)[0, 1]
+    else:
+        prob = float(model.predict(x).ravel()[0])
+
+    # 4. Threshold at 0.5
+    prediction = "Yes, customer will church" if prob > 0.5 else "No, customer will stay"
 
     return {
-        "churn_probability": float(prob),
-        "churn_prediction": "Yes" if prediction == 1 else "No"
+        "churn_probability": round(float(prob), 4),
+        "churn_prediction": prediction
     }
