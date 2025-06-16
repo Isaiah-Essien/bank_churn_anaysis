@@ -7,6 +7,12 @@ This project develops a predictive model to identify customers at risk of churni
 > **Data Source:** Synthetic customer churn dataset  
 > **Use Case:** Binary classification — Predict whether a customer will churn (`Churn = 1`) or stay (`Churn = 0`)
 
+### Relevant Links:
+1. ![Colab Notebook](https://colab.research.google.com/drive/1BclDzvy0aqZXyEMtK-lm8gtPEH4cDj3p?usp=sharing)
+2. ![Summary Doc and Recommendations](https://docs.google.com/document/d/1F2j6Uno26QYn7bIWX0Qj6vGlLdsZy9qPLIDOe1vGHHE/edit?usp=sharing)
+3. ![Render Endpoint](https://bank-churn-anaysis-1.onrender.com/docs#/default/predict_churn_predict_post)
+4. [Link to Slides](https://docs.google.com/presentation/d/1p7KIACpBcSEeY7Rt1q1tIcmRTx3SxFShUmQHep22BcI/edit?usp=sharing)
+
 ---
 
 ## Dataset Description
@@ -132,7 +138,9 @@ POST /predict
   "churn_probability": 0.7345,
   "churn_prediction": "Yes"
 }
+
 ```
+### ![Endpoint on Render:](https://bank-churn-anaysis-1.onrender.com/docs#/default/predict_churn_predict_post) 
 
 ![Response Body](/screenshots/response.png)
 
@@ -158,6 +166,7 @@ POST /predict
 ## License
 
 This project is for academic and demonstration purposes using synthetic data. No personally identifiable or real customer data was used.
+
 
 ## Author
 - Isaiah Essien: i.essien@alustudent.com
