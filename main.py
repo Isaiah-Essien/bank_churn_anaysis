@@ -78,7 +78,7 @@ def predict_churn(data: CustomerInput):
     prediction = "Yes, customer will church" if prob > 0.5 else "No, customer will stay"
 
     return {
-        "churn_probability": round(float(prob), 4),
+        "churn_probability": round(float(prob*100), 4),
         "churn_prediction": prediction
     }
 
